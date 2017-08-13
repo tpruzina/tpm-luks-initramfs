@@ -166,3 +166,7 @@ Feel free to experiment with initramfs/init script.
 
 # Issues
 Accepting issues/pull requests, feel free to drop a comment @pruzinat.
+
+## License
+All the scripts are licensed under WTFPLv2 (see COPYING).
+Binaries are included for convenience only, see respective projects (Dependencies) in for licensing.
