@@ -1,14 +1,18 @@
 # TMP/LUKS enabled linux initramfs
 
 This repository contains my personal initramfs that loads encrypted filesystem (poormans bitlocker for linux) with TPM/LUKS.
+Largely a DIY guide rather than drop-in-and-it-works. Have fun.
+
+## Notes
 It's meant to be used with gentoo (systemd+openrc) on x86\_64, anything else will require modification of init and import.sh scripts as well as recompilation of provided binaries.
 Building static trousers and tpm-tools is pain hence lddtree utility was used to extract shared libraries (glibc-1.26, openssl).
-You are strongly encouraged to replace all binaries provided with your own, firstly my binaries might not work on your system, secondly you shouldn't trust me :-)
+You are strongly encouraged to replace all binaries provided with your own, firstly my binaries might not work on your system, secondly you _shouldn't_ trust me :-)
 
-NOTE: this README doesn't teach you how to use tpm-tools, cryptsetup nor kernel and initramfs. I suggest these articles for details:
+This README doesn't teach you how to use tpm-tools, cryptsetup nor kernel and initramfs. I suggest these articles for details:
 
-https://pagefault.blog/2016/12/23/guide-encryption-with-tpm/
-https://wiki.gentoo.org/wiki/Custom\_Initramfs
+[encryption with tpm - guide](https://pagefault.blog/2016/12/23/guide-encryption-with-tpm/)
+
+[custom initramfs - gentoo wiki](https://wiki.gentoo.org/wiki/Custom\_Initramfs)
 
 ## Warning, Danger Will Robinson
 This is more or less a guide how to setup this, not a copy&paste tutorial. You are expected to use google-fu.
@@ -19,31 +23,31 @@ If anybody managed to build tpm-tools statically I would very much want to hear 
 While this initramfs is gonna work out of the box on my system, you will need to do these:
 
 0) setup tpm-tools on your system
-1) modify init and import.sh according to your setup (it's commented)
+1) modify `init` and `import.sh` according to your setup (it's commented)
 2) create encryption key via tpm and store it in initramfs (see bellow)
-3) copy /var/lib/tpm/system.data into initramfs (see bollow)
+3) copy `/var/lib/tpm/system.data` into initramfs (see bollow)
 4) build initramfs and make it load during boot
     use google, there are more ways to do this, 
-    easiest one is to compile custom kernel and set CONFIG_INITRAMFS_SOURCE="/usr/src/initramfs".
+    easiest one is to compile custom kernel and set `CONFIG_INITRAMFS_SOURCE="/usr/src/initramfs`.
 5) Test
 6) Boot
 
 ## Encryption key
 
-Basically you will want to generate a key, seal it with tpm and place it in initramfs as /key.enc.
+Basically you will want to generate a key, seal it with tpm and place it in initramfs as `/key.enc`.
 
-openssl rand 32 -hex | tpm\_sealdata > key.enc
+```openssl rand 32 -hex | tpm\_sealdata > key.enc```
 
 During boot, this key will be decrypted via tpm, used to unlock your encrypted partitions and then shreded in memory.
 
-##/#var/lib/tpm/system.data
+## var/lib/tpm/system.data
 
 You will need to copy this file from your main installation (where you initialized TPM via tpm-tools).
 
 ### Binary replacement
 You will need tpm-tools utilities (tcsd, tpm\_*) , cryptsetup (static) and busybox (static).
 Dynamic libraries needed for tpm-tools packages can be extracted with lddtree by following guide here:
-https://wiki.gentoo.org/wiki/Custom_Initramfs#lddtree
+[lddtree usage - gentoo wiki](https://wiki.gentoo.org/wiki/Custom_Initramfs#lddtree)
 
 
 ## Testing
@@ -57,12 +61,12 @@ You can actually chroot into initramfs and "emulate" what would happen on boot l
 # mount --make-rslave ./initramfs/dev
 # chroot ./initramfs /init
 ```
-Insert "rescue_shell" call in ./initramfs/init script to do step by step debugging (you won't be able to execute systemd init though).
+Insert `rescue_shell` call in ./initramfs/init script to do step by step debugging (you won't be able to execute systemd init though).
 
 ### Live
-Most commands in init have "|| rescue_shell" appended to them, e.g. on failure you will be dropped into busybox shell.
+Most commands in init have `|| rescue_shell` appended to them, e.g. on failure you will be dropped into busybox shell.
 Afterwards you can quite easily debug from there (assuming you know how shell works). 
-You will probably want to load import.sh functions, this needs to be done manually via ". import.sh".
+You will probably want to load `import.sh` functions, this needs to be done manually via `. import.sh`.
 
 Feel free to experiment with initramfs/init script.
 
@@ -146,4 +150,8 @@ Feel free to experiment with initramfs/init script.
 │       │       └── system.data (you will need to copy this file from your system in order for tpm to work properly)
 │       └── run
 │           └── nscd
-└── README.md   // this readme```
+└── README.md   // this readme
+```
+
+# Issues
+Accepting issues/pull requests, feel free to drop a comment @pruzinat.
