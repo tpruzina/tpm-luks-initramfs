@@ -6,14 +6,14 @@ available commands:
 	mount_tmp
 	umount_tmp
 	mount_root
-	insmod_nvidia
 	
 	tcsd_init
 	tcsd_exit
 	encrypt <input> <outut>
 	decrpyt <input> <output>
 	shred <file>
-	
+        encrypted_mount <key_file> <mount_point> <luks_name>
+
 	openrc
 	systemd
 	
@@ -39,7 +39,7 @@ test_shell()
 # Drop down to rescue shell
 rescue_shell()
 {
-        print "Something went wrong. Dropping to a shell (\'exit\' to continue)"
+        print "Something went wrong. Dropping to a shell - (\'exit\' to continue), \'. import.sh\' to load helper functions."
 	sh
 }
 
