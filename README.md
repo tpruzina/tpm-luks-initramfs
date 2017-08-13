@@ -19,6 +19,14 @@ This is more or less a guide how to setup this, not a copy&paste tutorial. You a
 Please create issue on bug tracker here if you find things unclear/flatout broken, much appreciated.
 If anybody managed to build tpm-tools statically I would very much want to hear about it so I can get rid of this dynamic libraries.
 
+## Dependencies
+* [trousers](https://github.com/srajiv/trousers)
+* [tpm-tools](https://github.com/srajiv/tpm-tools)
+* [cryptsetup](https://gitlab.com/cryptsetup/cryptsetup)
+* [openssl](https://www.openssl.org/)
+* [busybox](https://busybox.net/)
+* [linux kernel](https://www.kernel.org)
+
 ## INSTALL
 While this initramfs is gonna work out of the box on my system, you will need to do these:
 
