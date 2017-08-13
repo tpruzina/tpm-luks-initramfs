@@ -1,0 +1,40 @@
+#!/bin/busybox sh
+
+## LOAD HELPER FUNCTIONS (modify helper-functions.sh as necessary)
+source import.sh
+clear
+
+## MAIN INIT SEQUENCE
+print "Starting boot sequence"
+# Mount /sys,/dev,/proc
+mount_tmp
+
+# Mount rootfs (unencrypted)
+mount_root
+
+## SETUP FS crypto
+# Start tcsd (TPM)
+tcsd_init
+
+# Debug shell
+#rescue_shell
+
+# Decrypt keyfile using tpm_unseal (input password) 
+tpm_unsealdata -i key.enc -o key
+# Mount encrypted drive using decrypted key (modify according to your setup)
+if [ -f key ]; then
+	cryptsetup luksOpen --key-file key /dev/sdb1 external
+	mount /dev/mapper/external /mnt/root/mnt/media
+	# Overwrite and remove keyfile from tmpfs
+	shred /key
+fi
+
+# Shutdown tcsd and cleanup
+tcsd_exit
+
+# Cleanup /sys, /dev, /proc
+umount_tmp
+
+## EXECUTE INIT
+#openrc
+systemd
