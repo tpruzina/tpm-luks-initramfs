@@ -19,7 +19,9 @@ available commands:
 	
 	rescue_shell
 	test_shell
-	
+
+	enable_debug (LD_DEBUG=all, for helping fix linkage problems)
+	disable_debug
 for busybox commands \"busybox\"."
 }
 
