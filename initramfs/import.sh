@@ -33,13 +33,13 @@ print()
 # Propper shell on tty (ctrl+C, background tasks, ...)
 test_shell()
 {
-	setsid /bin/busybox sh -c 'exec /bin/busybox sh </dev/tty1 >/dev/tty1 2>&1'
+	setsid /bin/busybox sh -c '/bin/busybox sh </dev/tty1 >/dev/tty1 2>&1'
 }
 
 # Drop down to rescue shell
 rescue_shell()
 {
-        print "Something went wrong. Dropping to a shell."
+        print "Something went wrong. Dropping to a shell (\'exit\' to continue)"
 	sh
 }
 
@@ -47,12 +47,12 @@ rescue_shell()
 mount_tmp()
 {
         print "Mounting temporary filesystems"
-        mount -o hidepid=1 -t proc none /proc
-        mount -t sysfs none /sys
-        mount -t devtmpfs none /dev
+        mount -o hidepid=1 -t proc none /proc || rescue_shell
+        mount -t sysfs none /sys || rescue_shell
+        mount -t devtmpfs none /dev || rescue_shell
 	
 	# Technically not required but nice to have (populate /dev by scaning /sys)
-	mdev -s
+	mdev -s || rescue_shell
 }
 
 # Unmount basic kernel filesystems
@@ -72,16 +72,6 @@ mount_root()
         mount -o rw /dev/sda1 /mnt/root/boot || rescue_shell
 }
 
-# Insert Nvidia kernel modules (you probably don't need this)
-insmod_nvidia()
-{
-        print "Inserting Nvidia kernel modules"
-        insmod /nvidia.ko || rescue_shell
-        insmod /nvidia-modeset.ko || rescue_shell
-        insmod /nvidia-drm.ko modeset=1 || rescue_shell
-        insmod /nvidia-uvm.ko || rescue_shell
-}
-
 # Starts tscd daemon in the background (required for TPM)
 tcsd_init()
 {
@@ -93,10 +83,10 @@ tcsd_init()
 		/var/run/nscd
 
 	# tscd uses TCP sockets on localhost hence we need to bring loopback up
-	ifconfig lo up
+	ifconfig lo up || rescue_shell
 	
 	#execute tscd (daemon mode)
-	tcsd
+	tcsd || rescue_shell
 }
 
 # Stops tscd and cleans up (TPM)
@@ -104,21 +94,21 @@ tcsd_exit()
 {
 	print "Exiting TSCD"
 	killall tcsd
-	ifconfig lo down
+	ifconfig lo down || rescue_shell
 }
 
 # Encrypt file $1, output in $2
 encrypt()
 {
         print "encrypting file $1 -> $2"
-	/bin/tpm_sealdata --infile $1 --outfile $2
+	/bin/tpm_sealdata --infile $1 --outfile $2 || rescue_shell 
 }
 
 # Decrypt file $1, output in $2
 decrypt()
 {
         print "decrypting file $1 -> $2"
-	/bin/tpm_unsealdata --infile $1 --outfile $2
+	/bin/tpm_unsealdata --infile $1 --outfile $2 || rescue_shell
 }
 
 # Shred file 
@@ -132,7 +122,30 @@ shred()
 		rm $1
 	else
 		print "failure shredding $1"
+                rescue_shell
 	fi
+}
+
+# Mount encrypted volume via luks
+# $1 - keyfile
+# $2 - mountpoint
+# $3 - luks name
+encrypted_mount()
+{
+    if [ "$#" -eq 3 ]; then
+        if [ ! -f $1 ]; then
+            print "encrypted mount: missing key file"
+            rescue_shell
+        fi
+        
+        # cryptsetup luksOpen --key-file key /dev/sdb1 external
+        cryptsetup luksOpen --key-file $1 $2 $3
+        # mount /dev/mapper/external /mnt/root/mnt/media
+        mount /dev/mapper/$3 $2
+    else
+        print "encrypted mount: wrong number of parameters"
+        rescue_shell
+    fi
 }
 
 # Debug symbols

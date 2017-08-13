@@ -20,14 +20,9 @@ tcsd_init
 #rescue_shell
 
 # Decrypt keyfile using tpm_unseal (input password) 
-tpm_unsealdata -i key.enc -o key
-# Mount encrypted drive using decrypted key (modify according to your setup)
-if [ -f key ]; then
-	cryptsetup luksOpen --key-file key /dev/sdb1 external
-	mount /dev/mapper/external /mnt/root/mnt/media
-	# Overwrite and remove keyfile from tmpfs
-	shred /key
-fi
+decrypt key.enc /key
+encrypted_mount /key /mnt/root/home encrypted
+shred /key
 
 # Shutdown tcsd and cleanup
 tcsd_exit
