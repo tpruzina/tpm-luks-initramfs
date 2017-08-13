@@ -56,30 +56,30 @@ During boot, this key will be decrypted via tpm, used to unlock your encrypted p
 You will need to copy this file from your main installation (where you initialized TPM via tpm-tools).
 
 ### Binary replacement
-You will need tpm-tools utilities (tcsd, tpm\_*) , cryptsetup (static) and busybox (static).
+You will need tpm-tools utilities (tcsd, tpm_*) , cryptsetup (static) and busybox (static).
 Dynamic libraries needed for tpm-tools packages can be extracted with lddtree by following guide here:
 [lddtree usage - gentoo wiki](https://wiki.gentoo.org/wiki/Custom_Initramfs#lddtree)
 
 
 ## Testing
 ### chroot
-You can actually chroot into initramfs and "emulate" what would happen on boot like this:
-```
-# mount -t proc /proc ./initramfs/proc
-# mount --rbind /sys ./initramfs/sys
-# mount --make-rslave ./initramfs/sys
-# mount --rbind /dev ./initramfs/dev
-# mount --make-rslave ./initramfs/dev
-# chroot ./initramfs /init
-```
-Insert `rescue_shell` call in ./initramfs/init script to do step by step debugging (you won't be able to execute systemd init though).
+Chroot into initramfs and "emulate" what would happen on boot like this:
+```mount -t proc /proc ./initramfs/proc
+mount --rbind /sys ./initramfs/sys
+mount --make-rslave ./initramfs/sys
+mount --rbind /dev ./initramfs/dev
+mount --make-rslave ./initramfs/dev
+chroot ./initramfs /busybox/sh
+. import.sh
+...```
+You won't be able to execute init though.
 
 ### Live
 Most commands in init have `|| rescue_shell` appended to them, e.g. on failure you will be dropped into busybox shell.
 Afterwards you can quite easily debug from there (assuming you know how shell works). 
 You will probably want to load `import.sh` functions, this needs to be done manually via `. import.sh`.
 
-Feel free to experiment with initramfs/init script.
+Feel free to experiment with /init script.
 
 ## Tree
 ```
@@ -92,10 +92,7 @@ Feel free to experiment with initramfs/init script.
 │   │   ├── console
 │   │   ├── kmsg
 │   │   ├── loop0
-│   │   ├── loop1
-│   │   ├── loop2
-│   │   ├── loop3
-│   │   ├── loop4
+│   │   ├── ...
 │   │   ├── loop5
 │   │   ├── null
 │   │   ├── random
@@ -104,7 +101,7 @@ Feel free to experiment with initramfs/init script.
 │   │   ├── tty
 │   │   ├── tty0
 │   │   └── urandom
-│   ├── etc                     // all this crap is required because tcsd expects working tcp sockets
+│   ├── etc                     // all this crap is required because tcsd expects working tcp sockets and user/group tss
 │   │   ├── group
 │   │   ├── host.conf
 │   │   ├── hosts
@@ -133,7 +130,7 @@ Feel free to experiment with initramfs/init script.
 │   │   ├── cryptsetup          // used for LUKS (static)
 │   │   ├── nologin             // tcsd requires tss:tss group (that means we need all this crap)
 │   │   ├── tcsd                // tcsd (TPM daemon)
-│   │   ├── tpm\_selftest        // tpm-tools libraries
+│   │   ├── tpm\_selftest       // tpm-tools libraries
 │   │   ├── tpm\_setactive
 │   │   ├── tpm\_setenable
 │   │   ├── tpm\_takeownership
@@ -161,11 +158,10 @@ Feel free to experiment with initramfs/init script.
 │       │       └── system.data (you will need to copy this file from your system in order for tpm to work properly)
 │       └── run
 │           └── nscd
-└── README.md   // this readme
-```
+└── README.md   // this readme```
 
 # Issues
-Accepting issues/pull requests, feel free to drop a comment @pruzinat.
+Accepting issues/pull requests, feel free to drop a comment [@pruzinat](https://twitter.com/).
 
 ## License
 All the scripts are licensed under WTFPLv2 (see COPYING).
