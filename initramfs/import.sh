@@ -163,14 +163,24 @@ disable_debug()
 # Execute OpenRC init (gentoo)
 openrc()
 {
-        print "Executing OpenRC init"
-        exec switch_root /mnt/root /sbin/init
+        if [ ! -f /mnt/root/sbin/init ]; then
+            print "OpenRC init not found, perhaps rootfs isn't mounted?"
+            rescue_shell
+        else
+            print "Executing OpenRC init"
+            exec switch_root /mnt/root /sbin/init
+        fi
 }
 
 # Execute systemd init (gentoo path: /usr/lib/systemd/systemd)
 systemd()
 {
-        print "Executing systemd init"
-        exec switch_root /mnt/root /usr/lib/systemd/systemd
+        if [ ! -f /mnt/root/usr/lib/systemd/systemd ]; then
+            print "systemd init not found, perhaps rootfs isn't mounted?"
+            rescue_shell
+        else
+            print "Executing systemd init"
+            exec switch_root /mnt/root /usr/lib/systemd/systemd
+        fi
 }
 
