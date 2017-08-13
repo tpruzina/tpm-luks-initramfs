@@ -1,4 +1,4 @@
-== TMP/LUKS enabled linux initramfs ==
+# TMP/LUKS enabled linux initramfs
 
 This repository contains my personal initramfs that loads encrypted filesystem (poormans bitlocker for linux) with TPM/LUKS.
 It's meant to be used with gentoo (systemd+openrc) on x86\_64, anything else will require modification of init and import.sh scripts as well as recompilation of provided binaries.
@@ -10,12 +10,12 @@ NOTE: this README doesn't teach you how to use tpm-tools, cryptsetup nor kernel 
 https://pagefault.blog/2016/12/23/guide-encryption-with-tpm/
 https://wiki.gentoo.org/wiki/Custom\_Initramfs
 
-== Warning, Danger Will Robinson ==
+## Warning, Danger Will Robinson
 This is more or less a guide how to setup this, not a copy&paste tutorial. You are expected to use google-fu.
 Please create issue on bug tracker here if you find things unclear/flatout broken, much appreciated.
 If anybody managed to build tpm-tools statically I would very much want to hear about it so I can get rid of this dynamic libraries.
 
-== INSTALL ==
+## INSTALL
 While this initramfs is gonna work out of the box on my system, you will need to do these:
 
 0) setup tpm-tools on your system
@@ -28,7 +28,7 @@ While this initramfs is gonna work out of the box on my system, you will need to
 5) Test
 6) Boot
 
-== Encryption key ==
+## Encryption key
 
 Basically you will want to generate a key, seal it with tpm and place it in initramfs as /key.enc.
 
@@ -36,37 +36,38 @@ openssl rand 32 -hex | tpm\_sealdata > key.enc
 
 During boot, this key will be decrypted via tpm, used to unlock your encrypted partitions and then shreded in memory.
 
-== /var/lib/tpm/system.data ==
+##/#var/lib/tpm/system.data
 
 You will need to copy this file from your main installation (where you initialized TPM via tpm-tools).
 
-== Binary replacement ==
+### Binary replacement
 You will need tpm-tools utilities (tcsd, tpm\_*) , cryptsetup (static) and busybox (static).
 Dynamic libraries needed for tpm-tools packages can be extracted with lddtree by following guide here:
 https://wiki.gentoo.org/wiki/Custom_Initramfs#lddtree
 
 
-== Testing ==
-=== chroot ===
+## Testing
+### chroot
 You can actually chroot into initramfs and "emulate" what would happen on boot like this:
-
+```
 # mount -t proc /proc ./initramfs/proc
 # mount --rbind /sys ./initramfs/sys
 # mount --make-rslave ./initramfs/sys
 # mount --rbind /dev ./initramfs/dev
 # mount --make-rslave ./initramfs/dev
 # chroot ./initramfs /init
-
+```
 Insert "rescue_shell" call in ./initramfs/init script to do step by step debugging (you won't be able to execute systemd init though).
 
-=== Live ===
+### Live
 Most commands in init have "|| rescue_shell" appended to them, e.g. on failure you will be dropped into busybox shell.
 Afterwards you can quite easily debug from there (assuming you know how shell works). 
 You will probably want to load import.sh functions, this needs to be done manually via ". import.sh".
 
 Feel free to experiment with initramfs/init script.
 
-== Tree ==
+## Tree
+```
 ├── initramfs                   // main initramfs
 │   ├── bin
 │   │   ├── busybox
@@ -145,5 +146,4 @@ Feel free to experiment with initramfs/init script.
 │       │       └── system.data (you will need to copy this file from your system in order for tpm to work properly)
 │       └── run
 │           └── nscd
-└── README.md   // this readme
-
+└── README.md   // this readme```
