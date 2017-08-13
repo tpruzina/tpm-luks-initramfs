@@ -12,7 +12,7 @@ available commands:
 	encrypt <input> <outut>
 	decrpyt <input> <output>
 	shred <file>
-        encrypted_mount <key_file> <mount_point> <luks_name>
+	encrypted_mount <key_file> <mount_point> <luks_name>
 
 	openrc
 	systemd
@@ -29,7 +29,7 @@ for busybox commands \"busybox\"."
 print()
 {
 	echo "$@"
-        echo "initramfs: $@" >> dev/kmsg
+	echo "initramfs: $@" >> dev/kmsg
 }
 
 # Propper shell on tty (ctrl+C, background tasks, ...)
@@ -41,17 +41,17 @@ test_shell()
 # Drop down to rescue shell
 rescue_shell()
 {
-        print "Something went wrong. Dropping to a shell - (\'exit\' to continue), \'. import.sh\' to load helper functions."
+	print "Something went wrong. Dropping to a shell - (\'exit\' to continue), \'. import.sh\' to load helper functions."
 	sh
 }
 
 # Mount basic kernel filesystems (required to mount root filesystem)
 mount_tmp()
 {
-        print "Mounting temporary filesystems"
-        mount -o hidepid=1 -t proc none /proc || rescue_shell
-        mount -t sysfs none /sys || rescue_shell
-        mount -t devtmpfs none /dev || rescue_shell
+	print "Mounting temporary filesystems"
+	mount -o hidepid=1 -t proc none /proc || rescue_shell
+	mount -t sysfs none /sys || rescue_shell
+	mount -t devtmpfs none /dev || rescue_shell
 	
 	# Technically not required but nice to have (populate /dev by scaning /sys)
 	mdev -s || rescue_shell
@@ -60,18 +60,18 @@ mount_tmp()
 # Unmount basic kernel filesystems
 umount_tmp()
 {
-        print "Unmounting temporary filesystems"
-        umount /proc
-        umount /sys
-        umount /dev
+	print "Unmounting temporary filesystems"
+	umount /proc
+	umount /sys
+	umount /dev
 }
 
 # Mount root filesystem (edit according to your setup)
 mount_root()
 {
-        print "Mounting root filesystem"
-        mount -o rw /dev/sda3 /mnt/root || rescue_shell
-        mount -o rw /dev/sda1 /mnt/root/boot || rescue_shell
+	print "Mounting root filesystem"
+	mount -o rw /dev/sda3 /mnt/root || rescue_shell
+	mount -o rw /dev/sda1 /mnt/root/boot || rescue_shell
 }
 
 # Starts tscd daemon in the background (required for TPM)
@@ -102,15 +102,21 @@ tcsd_exit()
 # Encrypt file $1, output in $2
 encrypt()
 {
-        print "encrypting file $1 -> $2"
-	/bin/tpm_sealdata --infile $1 --outfile $2 || rescue_shell 
+	for n in $(seq 5); do
+		tpm_sealdata --infile $1 --outfile $2 || break
+		print "failed to encrypt $1 [attempt $n]"
+		sleep 1
+	done
 }
 
 # Decrypt file $1, output in $2
 decrypt()
 {
-        print "decrypting file $1 -> $2"
-	/bin/tpm_unsealdata --infile $1 --outfile $2 || rescue_shell
+	for n in $(seq 5); do
+		tpm_unsealdata --infile $1 --outfile $2 || break
+		print "failed to decrypt $1 [attempt $n]"
+		sleep 1
+	done
 }
 
 # Shred file 
@@ -124,7 +130,7 @@ shred()
 		rm $1
 	else
 		print "failure shredding $1"
-                rescue_shell
+		rescue_shell
 	fi
 }
 
@@ -134,20 +140,20 @@ shred()
 # $3 - luks name
 encrypted_mount()
 {
-    if [ "$#" -eq 3 ]; then
-        if [ ! -f $1 ]; then
-            print "encrypted mount: missing key file"
-            rescue_shell
-        fi
-        
-        # cryptsetup luksOpen --key-file key /dev/sdb1 external
-        cryptsetup luksOpen --key-file $1 $2 $3
-        # mount /dev/mapper/external /mnt/root/mnt/media
-        mount /dev/mapper/$3 $2
-    else
-        print "encrypted mount: wrong number of parameters"
-        rescue_shell
-    fi
+	if [ "$#" -eq 3 ]; then
+	if [ ! -f $1 ]; then
+		print "encrypted mount: missing key file"
+		rescue_shell
+	fi
+	
+	# cryptsetup luksOpen --key-file key /dev/sdb1 external
+	cryptsetup luksOpen --key-file $1 $2 $3
+	# mount /dev/mapper/external /mnt/root/mnt/media
+	mount /dev/mapper/$3 $2
+	else
+	print "encrypted mount: wrong number of parameters"
+	rescue_shell
+	fi
 }
 
 # Debug symbols
@@ -165,24 +171,24 @@ disable_debug()
 # Execute OpenRC init (gentoo)
 openrc()
 {
-        if [ ! -f /mnt/root/sbin/init ]; then
-            print "OpenRC init not found, perhaps rootfs isn't mounted?"
-            rescue_shell
-        else
-            print "Executing OpenRC init"
-            exec switch_root /mnt/root /sbin/init
-        fi
+	if [ ! -f /mnt/root/sbin/init ]; then
+		print "OpenRC init not found, perhaps rootfs isn't mounted?"
+		rescue_shell
+	else
+		print "Executing OpenRC init"
+		exec switch_root /mnt/root /sbin/init
+	fi
 }
 
 # Execute systemd init (gentoo path: /usr/lib/systemd/systemd)
 systemd()
 {
-        if [ ! -f /mnt/root/usr/lib/systemd/systemd ]; then
-            print "systemd init not found, perhaps rootfs isn't mounted?"
-            rescue_shell
-        else
-            print "Executing systemd init"
-            exec switch_root /mnt/root /usr/lib/systemd/systemd
-        fi
+	if [ ! -f /mnt/root/usr/lib/systemd/systemd ]; then
+		print "systemd init not found, perhaps rootfs isn't mounted?"
+		rescue_shell
+	else
+		print "Executing systemd init"
+		exec switch_root /mnt/root /usr/lib/systemd/systemd
+	fi
 }
 
