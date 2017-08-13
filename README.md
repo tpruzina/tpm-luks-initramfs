@@ -14,6 +14,8 @@ This README doesn't teach you how to use tpm-tools, cryptsetup nor kernel and in
 
 [custom initramfs - gentoo wiki](https://wiki.gentoo.org/wiki/Custom\_Initramfs)
 
+[custom initramfs examples](https://wiki.gentoo.org/wiki/Custom_Initramfs/Examples)
+
 ## Warning, Danger Will Robinson
 This is more or less a guide how to setup this, not a copy&paste tutorial. You are expected to use google-fu.
 Please create issue on bug tracker here if you find things unclear/flatout broken, much appreciated.
