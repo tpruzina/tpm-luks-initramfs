@@ -51,6 +51,24 @@ Basically you will want to generate a key, seal it with tpm and place it in init
 
 During boot, this key will be decrypted via tpm, used to unlock your encrypted partitions and then shreded in memory.
 
+### To (un)seal or to (un)bind
+It is also possible to increase the seal this key against PCR registers, but if your PCR registers change, then you are fucked (updating BIOS, ...). 
+Rough list of PCRs is defined in [TCG Client Implementation](https://trustedcomputinggroup.org/wp-content/uploads/TCG_PCClientImplementation_1-21_1_00.pdf):
+
+```
+PCR 0-4         BIOS, ROM, MBR
+PCR 5-7         OS loaders
+PCR 8-15        OS
+PCR 16          Debug
+PCR 17-22       Trusted OS
+PCR 23          AS
+```
+
+Futher info in [TPM fundamentals](http://www.cs.unh.edu/~it666/reading_list/Hardware/tpm_fundamentals.pdf).
+
+### Use nvram to store the key onchip
+TODO
+
 ## var/lib/tpm/system.data
 
 You will need to copy this file from your main installation (where you initialized TPM via tpm-tools).
