@@ -82,6 +82,7 @@ Dynamic libraries needed for tpm-tools packages can be extracted with lddtree by
 ## Testing
 ### chroot
 Chroot into initramfs and "emulate" what would happen on boot like this:
+
 ```mount -t proc /proc ./initramfs/proc
 mount --rbind /sys ./initramfs/sys
 mount --make-rslave ./initramfs/sys
@@ -89,7 +90,8 @@ mount --rbind /dev ./initramfs/dev
 mount --make-rslave ./initramfs/dev
 chroot ./initramfs /busybox/sh
 . import.sh
-...```
+```
+
 You won't be able to execute init though.
 
 ### Live
@@ -100,8 +102,7 @@ You will probably want to load `import.sh` functions, this needs to be done manu
 Feel free to experiment with /init script.
 
 ## Tree
-```
-├── initramfs                   // main initramfs
+```├── initramfs                   // main initramfs
 │   ├── bin
 │   │   ├── busybox
 │   │   ├── tpm\_sealdata
@@ -176,7 +177,8 @@ Feel free to experiment with /init script.
 │       │       └── system.data (you will need to copy this file from your system in order for tpm to work properly)
 │       └── run
 │           └── nscd
-└── README.md   // this readme```
+└── README.md   // this readme
+```
 
 # Issues
 Accepting issues/pull requests, feel free to drop a comment [@pruzinat](https://twitter.com/).
