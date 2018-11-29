@@ -1,4 +1,4 @@
-# TMP/LUKS enabled linux initramfs
+# TPM/LUKS enabled linux initramfs
 ![Flowchart](https://github.com/tpruzina/tpm-luks-initramfs/raw/master/doc/flow.png)
 
 This repository contains my personal initramfs that loads encrypted filesystem (poormans bitlocker for linux) with TPM/LUKS.
