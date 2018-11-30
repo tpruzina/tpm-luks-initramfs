@@ -91,7 +91,7 @@ chroot ./initramfs /busybox/sh
 . import.sh
 ```
 
-You won't be able to execute init though.
+You won't be able to execute system init though (duh).
 
 ### Live
 Most commands in init have `|| rescue_shell` appended to them, e.g. on failure you will be dropped into busybox shell.
