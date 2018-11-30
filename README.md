@@ -1,7 +1,7 @@
 # TPM/LUKS enabled linux initramfs
 ![Flowchart](https://github.com/tpruzina/tpm-luks-initramfs/raw/master/doc/flow.png)
 
-This repository contains my personal initramfs that loads encrypted filesystem (poormans bitlocker for linux) with TPM/LUKS.
+This repository contains custom initramfs that loads encrypted filesystem (poormans bitlocker for linux) with TPM/LUKS.
 Largely a DIY guide rather than drop-in-and-it-works. Have fun.
 
 ## Notes
@@ -31,15 +31,14 @@ If anybody managed to build tpm-tools statically I would very much want to hear 
 * [linux kernel](https://www.kernel.org)
 
 ## INSTALL
-While this initramfs is gonna work out of the box on my system, you will need to do these:
+You will need to:
 
 0) setup tpm-tools on your system
 1) modify `init` and `import.sh` according to your setup (it's commented)
 2) create encryption key via tpm and store it in initramfs (see bellow)
-3) copy `/var/lib/tpm/system.data` into initramfs (see bollow)
-4) build initramfs and make it load during boot
-    use google, there are more ways to do this, 
-    easiest one is to compile custom kernel and set `CONFIG_INITRAMFS_SOURCE="/usr/src/initramfs`.
+3) copy `/var/lib/tpm/system.data` into initramfs
+4) build initramfs file and make it load during boot (there are multiple ways to do this, 
+    easiest one is IMO to compile custom kernel and set `CONFIG_INITRAMFS_SOURCE="/usr/src/initramfs`)
 5) Test
 6) Boot
 
@@ -52,7 +51,7 @@ Basically you will want to generate a key, seal it with tpm and place it in init
 During boot, this key will be decrypted via tpm, used to unlock your encrypted partitions and then shreded in memory.
 
 ### To (un)seal or to (un)bind
-It is also possible to increase the seal this key against PCR registers, but if your PCR registers change, then you are fucked (updating BIOS, ...). 
+It is also possible to increase the seal this key against PCR registers, but if your PCR registers change, then you might get screwed (updating BIOS, ...), so make sure you know what you are doing.
 Rough list of PCRs is defined in [TCG Client Implementation](https://trustedcomputinggroup.org/wp-content/uploads/TCG_PCClientImplementation_1-21_1_00.pdf):
 
 ```
@@ -67,7 +66,7 @@ PCR 23          AS
 Futher info in [TPM fundamentals](http://www.cs.unh.edu/~it666/reading_list/Hardware/tpm_fundamentals.pdf).
 
 ### Use nvram to store the key onchip
-TODO
+TODO (?)
 
 ## var/lib/tpm/system.data
 
