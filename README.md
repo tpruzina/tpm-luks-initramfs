@@ -94,8 +94,7 @@ chroot ./initramfs /busybox/sh
 You won't be able to execute system init though (duh).
 
 ### Live
-Most commands in init have `|| rescue_shell` appended to them, e.g. on failure you will be dropped into busybox shell.
-Afterwards you can quite easily debug from there (assuming you know how shell works). 
+Most commands in /init have `|| rescue_shell` appended to them, e.g. on failure you will be dropped into busybox shell.
 You will probably want to load `import.sh` functions, this needs to be done manually via `. import.sh`.
 
 Feel free to experiment with /init script.
